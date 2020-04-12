@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "152374488070",
+    "firebase_url": "https://spell-game-3083a.firebaseio.com",
+    "project_id": "spell-game-3083a",
+    "storage_bucket": "spell-game-3083a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:152374488070:android:b02dbed0c1d1aac9a5e787",
+        "android_client_info": {
+          "package_name": "com.example.spell_check"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "152374488070-g4sq75nd4rqlv5977vt9l0ngnqiu889o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8RnVALGAP45Lzp571SpNQ2prExepd2XQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "152374488070-g4sq75nd4rqlv5977vt9l0ngnqiu889o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
