@@ -1,3 +1,4 @@
+//This one is main dashboard.
 import 'package:flutter/material.dart';
 import 'package:spell_check/screens/profile.dart';
 import 'package:spell_check/screens/stats.dart';
