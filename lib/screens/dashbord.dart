@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:spell_check/screens/profile.dart';
 import 'package:spell_check/screens/stats.dart';
-// import 'package:spell_check/screens/create_profile.dart';
 
 import 'level_screen.dart';
 
@@ -10,8 +9,6 @@ class Dashboard extends StatefulWidget {
   @override
   _DashState createState() => _DashState();
 }
-
-
 
 class _DashState extends State<Dashboard> {
   int selectedIndex = 0;
@@ -25,17 +22,18 @@ class _DashState extends State<Dashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text('Dashboard')
-      ),
+      appBar: AppBar(title: Text('Dashboard')),
       body: Center(
         child: widgetOptions.elementAt(selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Profile')),
-          BottomNavigationBarItem(icon: Icon(Icons.book), title: Text('Practice')),
-          BottomNavigationBarItem(icon: Icon(Icons.pie_chart), title: Text('stats'))
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person), title: Text('Profile')),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.book), title: Text('Practice')),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.pie_chart), title: Text('stats'))
         ],
         currentIndex: selectedIndex,
         fixedColor: Colors.deepPurple,
@@ -44,10 +42,10 @@ class _DashState extends State<Dashboard> {
       ),
     );
   }
-  void onItemTapped(int index) {
-          setState(() {
-            selectedIndex = index;
-          });
-        }
-}
 
+  void onItemTapped(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
+  }
+}

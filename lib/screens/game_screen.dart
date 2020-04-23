@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -13,9 +13,11 @@ enum TtsState { playing, stopped }
 
 class _GameState extends State<Game> {
   var words;
-  int totalWords = 0;
-  int score = 0;
-  int counter = 0;
+  int score;
+  int counter;
+  bool text_pressed = true, skip_pressed = true;
+  List<DataRow> _rowList = [];
+  //tts variables
   FlutterTts flutterTts;
   dynamic languages;
   String language;
@@ -30,9 +32,14 @@ class _GameState extends State<Game> {
 
   get isStopped => ttsState == TtsState.stopped;
   @override
-
   initState() {
+    score = 0;
+    counter = 0;
+    words = [];
     super.initState();
+    bloc.setTotalWords();
+    words = bloc.getTotalWords();
+    print(words);
     initTts();
   }
 
@@ -63,7 +70,6 @@ class _GameState extends State<Game> {
     });
   }
 
-  
   Future _getLanguages() async {
     languages = await flutterTts.getLanguages;
     if (languages != null) setState(() => languages);
@@ -82,44 +88,52 @@ class _GameState extends State<Game> {
     }
   }
 
+  void _addRow(String a, String b, bool c) {
+    // Built in Flutter Method.
+    setState(() {
+      // This call to setState tells the Flutter framework that something has
+      // changed in this State, which causes it to rerun the build method below.
+      _rowList.add(DataRow(cells: <DataCell>[
+        DataCell(Text(a)),
+        DataCell(Text(b)),
+        DataCell(Text(c.toString())),
+      ]));
+    });
+  }
+
   void _onChange(String text) {
     setState(() {
       _newVoiceText = text;
     });
   }
-  //Method to get total words.
-  Future _getTotalWords () async{
-    var word = await Firestore.instance.collection('/words').document('grade_1').get();
-    var answer = word['level_1'];
-    totalWords = answer.length;
-    words = answer;
 
-  }
-  Future _getWord () async {
-    //var word = await Firestore.instance.collection('/words').document('grade_1').get();
-    //var answer = word['level_1'];
-    //que.speak_word(answer[counter]);
-    if(counter<=totalWords){
+  Future _getWord() async {
+    if (counter <= words.length) {
       _onChange(words[counter]);
-      _speak();
+      while (text_pressed && skip_pressed) {
+        for (var i = 0; i < 3; i++) {
+          await _speak();
+          sleep(Duration(seconds: 1));
+        }
+      }
+      text_pressed = true;
+      skip_pressed = true;
       counter++;
     }
   }
 
-  bool _checkAnswer (String s) {
+  bool _checkAnswer(String s) {
     bool flag;
-    if(_newVoiceText == s){ 
+    if (_newVoiceText == s) {
       score++;
       flag = true;
       Fluttertoast.showToast(msg: 'Correct!!!');
-      }
-    else {
+    } else {
       flag = false;
       Fluttertoast.showToast(msg: 'Wrong!!!');
     }
     return flag;
   }
-
 
   Future _stop() async {
     var result = await flutterTts.stop();
@@ -131,51 +145,92 @@ class _GameState extends State<Game> {
     super.dispose();
     flutterTts.stop();
     counter = 0;
-    score = 0;
+    bloc.removeTotalWords();
   }
 
-
   Widget build(BuildContext context) {
-    _getTotalWords();
+    print(words.length);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(title: Text('Practice')),
       body: Center(
+          child: SingleChildScrollView(
         child: Column(
           children: <Widget>[
             Text("First Press below button then type answer"),
-            IconButton(icon: Icon(Icons.hearing),iconSize: 50, onPressed: () async {
-                _getWord();
-              }),
-
-            TextField(
-              decoration: InputDecoration(
-              border: InputBorder.none,
-              hintText: 'Enter answer',
-              fillColor: Colors.blue,
+            IconButton(
+                icon: Icon(Icons.hearing),
+                iconSize: 50,
+                onPressed: () async {
+                  _getWord();
+                }),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                decoration: InputDecoration(
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                    borderSide: BorderSide(color: Colors.red, width: 2),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                    borderSide: BorderSide(color: Colors.red),
+                  ),
+                  hintText: 'Enter answer',
+                  fillColor: Colors.blue,
+                ),
+                onTap: () {
+                  text_pressed = false;
+                },
+                onSubmitted: (text) {
+                  setState(() {
+                    var result = _checkAnswer(text.toLowerCase());
+                    _addRow(_newVoiceText, text, result);
+                    print(result);
+                    //_userText = text;
+                    TextEditingController().text = "";
+                  });
+                },
+                controller: TextEditingController(),
               ),
-              
-              onSubmitted: (text) {
-                setState(() {
-                  var result = _checkAnswer(text);
-                  print(result);
-                  TextEditingController().text = "";
-                });
-              },
-              controller: TextEditingController(),
-              
             ),
-            Text(counter.toString() + '/' + totalWords.toString()),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: RaisedButton(
+                    child: Text('Skip'),
+                    splashColor: Colors.blue,
+                    onPressed: () {
+                      bloc.addToSkipped(_newVoiceText);
+                      skip_pressed = false;
+                      _addRow(_newVoiceText, "-", null);
+                    },
+                  ),
+                ),
+              ],
+            ),
+            Text(counter.toString() + '/' + words.length.toString()),
+            DataTable(columns: [
+              DataColumn(label: Text('Word')),
+              DataColumn(label: Text('Your Answer')),
+              DataColumn(label: Text('Result')),
+            ], rows: _rowList),
             RaisedButton(
               child: Text('End Game'),
-              onPressed: () {
-                bloc.updateScore(score);
-                Navigator.of(context).pushReplacementNamed('/dashboard');
+              onPressed: ()  {
+                if(ttsState == TtsState.stopped){
+                  print(score);
+                  bloc.updateScore(score);
+                 Navigator.of(context).pushReplacementNamed('/dashboard');
+                }
+                
               },
             )
           ],
-        )
-      ),
+        ),
+      )),
     );
   }
 }

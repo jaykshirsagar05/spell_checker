@@ -3,9 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'clipper.dart';
 import 'package:spell_check/custom/customTextField.dart';
+import 'package:spell_check/services/repository.dart' as repository;
 
 class LoginRegister extends StatefulWidget {
-
   @override
   _LoginRegisterState createState() => _LoginRegisterState();
 }
@@ -17,6 +17,7 @@ class _LoginRegisterState extends State<LoginRegister> {
   String _email;
   String _password;
   String _displayName;
+  String _grade = '1';
   bool _loading = false;
   bool _autoValidate = false;
   String errorMsg = "";
@@ -32,7 +33,8 @@ class _LoginRegisterState extends State<LoginRegister> {
     //GO logo widget
     Widget logo() {
       return Padding(
-        padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.15),
+        padding:
+            EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.15),
         child: Container(
           width: MediaQuery.of(context).size.width,
           height: 220,
@@ -143,7 +145,7 @@ class _LoginRegisterState extends State<LoginRegister> {
         });
         try {
           FirebaseUser user = await FirebaseAuth.instance
-            .signInWithEmailAndPassword(email: _email, password: _password);
+              .signInWithEmailAndPassword(email: _email, password: _password);
           Navigator.of(context).pushReplacementNamed('/home');
         } catch (error) {
           switch (error.code) {
@@ -212,13 +214,16 @@ class _LoginRegisterState extends State<LoginRegister> {
           UserUpdateInfo userUpdateInfo = new UserUpdateInfo();
           userUpdateInfo.displayName = _displayName;
           user.updateProfile(userUpdateInfo).then((onValue) {
-            Navigator.of(context).pushReplacementNamed('/home');
-            Firestore.instance.collection('/users').document(user.uid).setData(
-                {'email': _email, 'displayName': _displayName, 'grade': '1'}).then((onValue) {
+            Firestore.instance.collection('/users').document(user.uid).setData({
+              'email': _email,
+              'displayName': _displayName,
+              'grade': _grade
+            }).then((onValue) {
               _sheetController.setState(() {
                 _loading = false;
               });
             });
+            Navigator.of(context).pushReplacementNamed('/home');
           });
         } catch (error) {
           switch (error.code) {
@@ -539,6 +544,47 @@ class _LoginRegisterState extends State<LoginRegister> {
                                 input.isEmpty ? "*Required" : null,
                             hint: "PASSWORD",
                           )),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text("Enter Grade",
+                            textAlign: TextAlign.center,),
+                          ),
+                          Padding(
+                              padding: EdgeInsets.only(
+                                bottom: 20,
+                              ),
+                              child: DropdownButton<String>(
+                                value: _grade,
+                                icon: Icon(Icons.arrow_downward),
+                                iconSize: 20,
+                                iconEnabledColor: Colors.blue[200],
+                                elevation: 3,
+                                style: TextStyle(
+                                  color: Colors.deepPurple,
+                                ),
+                                onChanged: (String newnum) {
+                                  setState(() async {
+                                    _grade = newnum;
+                                  });
+                                },
+                                items: <String>[
+                                  '1',
+                                  '2',
+                                  '3',
+                                  '4',
+                                  '5'
+                                ].map<DropdownMenuItem<String>>((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                              )),
+                        ],
+                      ),
                       Padding(
                         padding: EdgeInsets.only(
                             left: 20,
@@ -586,7 +632,9 @@ class _LoginRegisterState extends State<LoginRegister> {
         body: Column(
           children: <Widget>[
             logo(),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.05,),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.05,
+            ),
             Padding(
               child: Container(
                 child: filledButton("LOGIN", primaryColor, Colors.white,

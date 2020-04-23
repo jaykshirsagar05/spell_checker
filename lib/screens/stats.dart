@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spell_check/services/bloc.dart' as bloc;
 class Stats extends StatelessWidget {
-  final s = bloc.getScore().toString();
+  //final s = bloc.getScore().toString();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -9,7 +9,7 @@ class Stats extends StatelessWidget {
       //appBar: AppBar(title: Text('Scores')),
       body: Center(
         child: Column(children: <Widget>[
-          Text("Your last game score is "+s),
+          Text("Your last game score is "),
         ],)
       ),
     );

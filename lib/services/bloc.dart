@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:spell_check/services/repository.dart' as repository;
@@ -30,11 +31,61 @@ void updateGrade(String grade) async{
   });
 }
 
-void updateScore(int s) async {
-  await repository.updateScore(s);
+// int getScore() {
+//    return repository.getScore();
+// }
+
+String currentLevel;
+List currentAsset;
+
+void setLevel(String s){
+  currentLevel = s;
 }
 
-int getScore() {
-   return repository.getScore();
+String getLevel(){
+  return currentLevel;
 }
 
+void setAsset(List l){
+  print(l);
+  currentAsset = l;
+}
+
+List getAsset(){
+  return currentAsset;
+}
+
+List totalWords = [];
+
+Future setTotalWords() async {
+  for (var s in currentAsset) {
+    var word =
+        await Firestore.instance.collection('/words').document('grade_1').get();
+        var l = word[s.toString()];
+        for(var a in l) {
+          totalWords.add(a);
+        }
+        //totalWords.add(s);
+  }
+}
+ List getTotalWords(){
+   return totalWords;
+ }
+
+ void removeTotalWords(){
+   totalWords.clear();
+ }
+
+void makeUserdir(){
+  repository.makeUserdir();
+}
+
+void updateScore(int s){
+  var level = getLevel();
+  repository.updateScore(level, s);
+}
+
+void addToSkipped(String s){
+  var level = getLevel();
+  repository.addToSkipped(level,s);
+}
