@@ -1,6 +1,6 @@
 # spell_check
 
-A new Flutter project.
+A flutter application in Ed-tech domain. This app is helpful to learn difficult english language spellings suing text-to-speech technology.
 
 ## Getting Started
 
